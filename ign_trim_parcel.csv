@@ -1,0 +1,34 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.mlab as ml
+NAS_PATH = Path('Z:')
+if not NAS_PATH.isdir():
+    NAS_PATH = Path('/media/sf_Z_DRIVE/')
+
+if not NAS_PATH.isdir():
+    raise Exception('Check the NAS path please')
+FILENAME = NAS_PATH / 'tmp/Giurone/giurone1228_6180.csv'
+df = read_csv(FILENAME, header = 0, decimal='.', sep = ' ')
+df.columns = ['x', 'y', 'z']
+xmin = 1228630.
+xmax = 1228970.
+x_tran = 1228000
+ymin = 6179000.
+ymax = 6179157.
+y_tran = 6179240.
+ix = df.index[(df['x']>=xmin)&(df['x']<=xmax)&(df['y']>=ymin)&(df['y']<=ymax)]
+df1 = df.iloc[ix]
+df1['x'] = df1['x'].apply(lambda x: x-x_tran)
+df1['y'] = df1['y'].apply(lambda y: y-y_tran)
+ax = df1['x'].values
+ay = df1['y'].values
+az = df1['z'].values
+df2 = df1[['y','z']]
+df2.set_index(df1['x'], inplace = True)
+df2.to_csv('/media/sf_Z_DRIVE/tmp/Giurone/giurone_1228_6180_pvsyst_droite.csv', sep = ' ', decimal= '.')
+xi = np.arange(xmin-x_tran, xmax-x_tran, 1.)
+yi = np.arange(ymin-y_tran, ymax-y_tran, 1.)
+zi = ml.griddata(ax, ay, az, xi, yi, interp= 'linear')
+plt.contour(xi, yi, zi, 10, linewidths = 0.5, colors = 'k')
+plt.pcolormesh(xi, yi, zi, cmap = plt.get_cmap('rainbow'))
+plt.colorbar()
